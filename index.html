@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>أستاذ الشارع | GESTION</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --neon-pink: #ff007f;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffb020;
+        }
+        * { box-sizing: border-box; font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { background-color: var(--bg-color); }
+        body { color: var(--text-main); padding-bottom: calc(80px + env(safe-area-inset-bottom)); min-height: 100vh; }
+
+        /* Header & Dashboard */
+        .header { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px 16px; padding-top: calc(14px + env(safe-area-inset-top)); border-bottom: 2px solid var(--neon-pink); background: #000; position: relative; }
+        .header img { width: 54px; height: 54px; border-radius: 50%; box-shadow: 0 0 12px rgba(255,0,127,0.45); }
+        .logo-text { font-size: 24px; font-weight: 900; color: var(--neon-pink); text-shadow: 0 0 10px rgba(255,0,127,0.5); line-height: 1.1; }
+        .logo-sub { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 2px; }
+        #installBtn { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: var(--neon-pink); color: #fff; font-size: 12px; padding: 8px 10px; }
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); padding: 14px 8px; background: var(--card-bg); margin-bottom: 14px; gap: 6px; }
+        .stat-box { text-align: center; border-radius: 10px; padding: 4px; }
+        .stat-box.clickable { cursor: pointer; background: rgba(255,0,127,0.08); border: 1px solid rgba(255,0,127,0.35); }
+        .stat-num { font-size: 22px; font-weight: bold; color: var(--neon-pink); }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+
+        /* Layout */
+        .container { padding: 10px; max-width: 600px; margin: auto; }
+        button { border: none; border-radius: 8px; cursor: pointer; font-weight: bold; padding: 10px 15px; transition: 0.2s; font-size: 14px; }
+        button:active { transform: scale(0.97); }
+        .btn-neon { background-color: var(--neon-pink); color: #fff; box-shadow: 0 0 8px rgba(255,0,127,0.4); width: 100%; margin-top: 10px; font-size: 16px; }
+        .btn-action { background-color: #333; color: #fff; }
+        .btn-pay { background-color: rgba(40, 167, 69, 0.2); color: var(--success); border: 1px solid var(--success); flex: 2; }
+        .btn-danger { background-color: rgba(220, 53, 69, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid #444; }
+
+        .search { position: relative; margin-bottom: 4px; }
+        .search input { padding-right: 40px; margin-bottom: 0; }
+        .search span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); opacity: .6; }
+
+        .banner { background: rgba(255,176,32,0.12); border: 1px solid var(--warning); color: var(--warning); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+        .banner button { background: var(--warning); color: #000; padding: 8px 12px; white-space: nowrap; }
+
+        /* Groups & Students */
+        .group-card { background: var(--card-bg); border-radius: 12px; margin-bottom: 15px; overflow: hidden; border: 1px solid #333; }
+        .group-header { padding: 15px; background: #2a2a2a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; }
+        .group-title { font-size: 17px; font-weight: bold; }
+        .group-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .type-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid #555; color: #ddd; margin-left: 6px; }
+        .type-badge.special { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .group-content { padding: 15px; display: none; }
+        .group-content.active { display: block; }
+        .group-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+        .group-controls button { padding: 10px 6px; }
+
+        .student-card { background: #252525; padding: 14px; border-radius: 8px; margin-bottom: 10px; border-right: 4px solid #555; }
+        .debt-alert { border-right-color: var(--neon-pink); box-shadow: 0 0 10px rgba(255,0,127,0.2); }
+        .student-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 17px; font-weight: bold; }
+        .debt-badge { background: var(--neon-pink); color: #fff; padding: 3px 9px; border-radius: 20px; font-size: 12px; white-space: nowrap; }
+        .student-stats { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: var(--text-muted); }
+        .student-actions { display: flex; gap: 6px; }
+        .empty { text-align: center; color: #777; padding: 10px; }
+
+        /* Inputs */
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; font-size: 16px; }
+        label.field { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.open { display: flex; }
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 15px; width: 92%; max-width: 560px; max-height: 88vh; overflow-y: auto; border: 1px solid var(--neon-pink); }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-modal { color: var(--danger); font-size: 28px; cursor: pointer; font-weight: bold; line-height: 1; padding: 0 6px; }
+
+        .att-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; cursor: pointer; }
+        .att-item input[type="checkbox"] { width: 25px; height: 25px; accent-color: var(--neon-pink); margin: 0; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid #333; cursor: pointer; gap: 8px; }
+        .muted { color: var(--text-muted); font-size: 13px; }
+        h4 { margin: 18px 0 6px; color: var(--neon-pink); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { padding: 9px 6px; text-align: right; border-bottom: 1px solid #333; font-size: 14px; }
+        th { color: var(--text-muted); font-weight: normal; }
+        .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+        .summary div { background: #252525; border-radius: 8px; padding: 8px 4px; font-size: 12px; color: var(--text-muted); }
+        .summary b { display: block; font-size: 18px; color: #fff; }
+
+        /* Footer */
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; gap: 10px; border-top: 1px solid #333; z-index: 10; }
+        .footer button { flex: 1; font-size: 13px; padding: 10px 6px; }
+
+        .toast { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 14px; border-radius: 10px; display: none; align-items: center; gap: 12px; z-index: 2000; font-weight: bold; box-shadow: 0 4px 20px rgba(0,0,0,.5); width: max-content; max-width: 92%; }
+        .toast.show { display: flex; }
+        .toast button { background: var(--neon-pink); color: #fff; padding: 6px 12px; }
+
+        /* Print */
+        #print-area { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            html, body { background: #fff; color: #000; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; direction: rtl; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .print-table th, .print-table td { border: 1px solid #000; padding: 12px; text-align: center; color: #000; }
+            .print-header { text-align: center; margin-bottom: 20px; color: #000; }
+            .print-logo { font-size: 30px; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="data:image/jpeg;base64,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" alt="">
+        <div>
+            <div class="logo-text">أستاذ الشارع</div>
+            <div class="logo-sub">GESTION</div>
+        </div>
+        <button id="installBtn" onclick="installApp()">📲 تثبيت</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="stat-box">
+            <div class="stat-num" id="total-students">0</div>
+            <div class="stat-label">إجمالي التلاميذ</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-num" id="total-sessions">0</div>
+            <div class="stat-label">الحصص المنجزة</div>
+        </div>
+        <div class="stat-box clickable" onclick="showRevenue()">
+            <div class="stat-num" id="month-revenue">0</div>
+            <div class="stat-label">مداخيل <span id="month-name"></span> ›</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="backup-banner"></div>
+        <div class="search">
+            <span>🔍</span>
+            <input type="search" id="search" placeholder="ابحث عن تلميذ..." oninput="render()">
+        </div>
+        <button class="btn-neon" onclick="openGroupModal()">+ إضافة فوج جديد</button>
+        <div id="groups-container" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="footer">
+        <button class="btn-action" onclick="openBackupModal()">💾 حفظ نسخة احتياطية</button>
+        <button class="btn-action" onclick="document.getElementById('importFile').click()">📂 استرجاع البيانات</button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+    </div>
+
+    <div id="modal" class="modal" onclick="if(event.target===this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-head">
+                <h3 id="modal-title"></h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><span id="toast-text"></span><button id="toast-btn" style="display:none">تراجع</button></div>
+
+    <div id="print-area">
+        <div class="print-header">
+            <div class="print-logo">أستاذ الشارع | GESTION</div>
+            <h2 id="print-title" style="margin-top: 10px;"></h2>
+        </div>
+        <table class="print-table">
+            <thead><tr><th>الرقم</th><th>الاسم واللقب</th><th>ملاحظات</th></tr></thead>
+            <tbody id="print-tbody"></tbody>
+        </table>
+    </div>
+
+    <script>
+    /* ================= Helpers ================= */
+    const STORE_KEY = 'ostadh_db';
+    const BACKUP_KEY = 'ostadh_last_backup';
+    const PRICES = { normal: 2000, special: 4000 };
+    const TYPE_LABEL = { normal: 'عادي', special: 'خاص' };
+    const MONTHS = ['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+    const $ = id => document.getElementById(id);
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const money = n => String(Math.round(n || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' دج';
+    function today() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+    const monthLabel = ym => { const [y, m] = ym.split('-'); return MONTHS[+m - 1] + ' ' + y; };
+
+    /* ================= Data ================= */
+    function migrate(raw) {
+        if (!raw || !Array.isArray(raw.groups)) throw new Error('invalid');
+        if (raw.version === 2) {
+            raw.groups.forEach(g => {
+                g.id = g.id || uid(); g.type = g.type || 'normal'; g.price = +g.price || PRICES[g.type];
+                g.sessions = Array.isArray(g.sessions) ? g.sessions : [];
+                g.students = Array.isArray(g.students) ? g.students : [];
+                g.students.forEach(s => { s.id = s.id || uid(); s.payments = Array.isArray(s.payments) ? s.payments : []; s.since = s.since || ''; });
+            });
+            return raw;
+        }
+        // Ancien format (v1): présences stockées par élève, paiements = nombre de séances
+        const out = { version: 2, groups: [] };
+        raw.groups.forEach(og => {
+            const g = { id: String(og.id || uid()), name: og.name || 'فوج', time: og.time || '', type: 'normal', price: PRICES.normal, students: [], sessions: [] };
+            const sessionMap = new Map();
+            (og.students || []).forEach(os => {
+                const s = { id: uid(), name: os.name || '', since: '', payments: [] };
+                const paid = +os.paid || 0;
+                if (paid > 0) s.payments.push({ id: uid(), date: '', sessions: paid, amount: null, legacy: true });
+                const seen = {};
+                (os.records || []).forEach(r => {
+                    const base = (r.date || '') + '|' + (r.topic || '');
+                    seen[base] = (seen[base] || 0) + 1;
+                    const key = base + '#' + seen[base];
+                    if (!sessionMap.has(key)) sessionMap.set(key, { id: uid(), date: r.date || '', topic: r.topic || 'درس دعم', present: [] });
+                    if (r.present) sessionMap.get(key).present.push(s.id);
+                    if (r.date && (!s.since || r.date < s.since)) s.since = r.date;
+                });
+                g.students.push(s);
+            });
+            g.sessions = [...sessionMap.values()];
+            out.groups.push(g);
+        });
+        return out;
+    }
+
+    let db;
+    try { db = migrate(JSON.parse(localStorage.getItem(STORE_KEY))); } catch (e) { db = { version: 2, groups: [] }; }
+    const openGroups = new Set();
+
+    function saveData() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(db));
+        render();
+    }
+
+    const findGroup = gid => db.groups.find(g => g.id === gid);
+    const findStudent = (g, sid) => g.students.find(s => s.id === sid);
+    const attendedCount = (g, s) => g.sessions.filter(x => x.present.includes(s.id)).length;
+    const paidSessions = s => s.payments.reduce((a, p) => a + (+p.sessions || 0), 0);
+    const sessionsSorted = g => [...g.sessions].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    /* ================= Render ================= */
+    function render() {
+        const q = $('search').value.trim().toLowerCase();
+        const container = $('groups-container');
+        let html = '', totalStudents = 0, totalSessions = 0;
+
+        db.groups.forEach(g => {
+            totalStudents += g.students.length;
+            totalSessions += g.sessions.length;
+            const students = q ? g.students.filter(s => s.name.toLowerCase().includes(q)) : g.students;
+            if (q && !students.length) return;
+            const isOpen = q ? true : openGroups.has(g.id);
+
+            const studentsHtml = students.map(s => {
+                const attended = attendedCount(g, s);
+                const paid = paidSessions(s);
+                const debt = attended - paid;
+                const alert = debt >= 4;
+                let badge;
+                if (alert) badge = `<span class="debt-badge">🚨 ديون: ${debt} حصص (${money(debt * g.price / 4)})</span>`;
+                else if (debt > 0) badge = `<span style="font-size:13px;color:var(--warning)">الديون: ${debt}</span>`;
+                else if (debt < 0) badge = `<span style="font-size:13px;color:var(--success)">مدفوع مسبقاً: ${-debt}</span>`;
+                else badge = `<span style="font-size:13px;color:var(--success)">✔ خالص</span>`;
+                return `
+                <div class="student-card ${alert ? 'debt-alert' : ''}">
+                    <div class="student-header"><span>${esc(s.name)}</span>${badge}</div>
+                    <div class="student-stats"><span>حضر: ${attended}</span><span>دفع: ${paid} حصص</span></div>
+                    <div class="student-actions">
+                        <button class="btn-pay" onclick="openPayModal('${g.id}','${s.id}')">💰 تسجيل دفع</button>
+                        <button class="btn-action" onclick="showHistory('${g.id}','${s.id}')">السجل</button>
+                        <button class="btn-action" onclick="openStudentModal('${g.id}','${s.id}')">✏️</button>
+                        <button class="btn-danger" onclick="deleteStudent('${g.id}','${s.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            html += `
+            <div class="group-card">
+                <div class="group-header" onclick="toggleGroup('${g.id}')">
+                    <div>
+                        <div class="group-title">${esc(g.name)}${g.time ? ' - ' + esc(g.time) : ''}</div>
+                        <div class="group-meta"><span class="type-badge ${g.type === 'special' ? 'special' : ''}">${TYPE_LABEL[g.type] || ''}</span>${money(g.price)} / 4 حصص · ${g.students.length} تلميذ</div>
+                    </div>
+                    <span>${isOpen ? '▲' : '▼'}</span>
+                </div>
+                <div class="group-content ${isOpen ? 'active' : ''}">
+                    <div class="group-controls">
+                        <button class="btn-action" onclick="openStudentModal('${g.id}')">+ تلميذ</button>
+                        <button class="btn-action" style="background:var(--neon-pink)" onclick="openAttendanceModal('${g.id}')">📝 حصة</button>
+                        <button class="btn-action" onclick="showSessions('${g.id}')">📅 الحصص</button>
+                        <button class="btn-action" onclick="printGroup('${g.id}')">🖨️ طباعة</button>
+                        <button class="btn-action" onclick="openGroupModal('${g.id}')">✏️ تعديل</button>
+                        <button class="btn-danger" onclick="deleteGroup('${g.id}')">🗑️ حذف</button>
+                    </div>
+                    ${studentsHtml || '<p class="empty">لا يوجد تلاميذ في هذا الفوج</p>'}
+                </div>
+            </div>`;
+        });
+
+        if (!html) html = q ? '<p class="empty">لا يوجد تلميذ بهذا الاسم</p>' : '<p class="empty">ابدأ بإضافة فوج جديد 👆</p>';
+        container.innerHTML = html;
+
+        $('total-students').innerText = totalStudents;
+        $('total-sessions').innerText = totalSessions;
+        const ym = today().slice(0, 7);
+        $('month-revenue').innerText = String(Math.round(monthRevenue(ym))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        $('month-name').innerText = MONTHS[+ym.slice(5) - 1];
+        renderBackupBanner(totalStudents);
+    }
+
+    function toggleGroup(gid) {
+        openGroups.has(gid) ? openGroups.delete(gid) : openGroups.add(gid);
+        render();
+    }
+
+    /* ================= Modal & toast ================= */
+    let modalOpen = false;
+    function showModal(title, body) {
+        $('modal-title').innerText = title;
+        $('modal-body').innerHTML = body;
+        if (!modalOpen) { modalOpen = true; $('modal').classList.add('open'); history.pushState({ modal: true }, ''); }
+        $('modal').querySelector('.modal-content').scrollTop = 0;
+    }
+    function closeModal() {
+        if (!modalOpen) return;
+        if (history.state && history.state.modal) history.back(); else hideModal();
+    }
+    function hideModal() { modalOpen = false; $('modal').classList.remove('open'); }
+    // Le bouton retour d'Android ferme la fenêtre au lieu de quitter l'app
+    window.addEventListener('popstate', () => { if (modalOpen) hideModal(); });
+
+    let toastTimer;
+    function toast(text, undoFn) {
+        $('toast-text').innerText = text;
+        const btn = $('toast-btn');
+        btn.style.display = undoFn ? 'inline-block' : 'none';
+        btn.onclick = () => { hideToast(); undoFn && undoFn(); };
+        $('toast').classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(hideToast, undoFn ? 6000 : 2500);
+    }
+    function hideToast() { $('toast').classList.remove('show'); }
+
+    /* ================= Groups ================= */
+    function openGroupModal(gid) {
+        const g = gid ? findGroup(gid) : null;
+        const type = g ? g.type : 'normal';
+        showModal(g ? 'تعديل الفوج' : 'إضافة فوج', `
+            <label class="field">اسم الفوج</label>
+            <input type="text" id="g-name" placeholder="مثال: الفوج الأول" value="${g ? esc(g.name) : ''}">
+            <label class="field">التوقيت</label>
+            <input type="text" id="g-time" placeholder="مثال: السبت 09:00" value="${g ? esc(g.time) : ''}">
+            <div class="row">
+                <div>
+                    <label class="field">نوع الفوج</label>
+                    <select id="g-type" onchange="$('g-price').value = PRICES[this.value]">
+                        <option value="normal" ${type === 'normal' ? 'selected' : ''}>عادي</option>
+                        <option value="special" ${type === 'special' ? 'selected' : ''}>خاص</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="field">السعر (4 حصص) دج</label>
+                    <input type="number" id="g-price" inputmode="numeric" value="${g ? g.price : PRICES[type]}">
+                </div>
+            </div>
+            <button class="btn-neon" onclick="saveGroup('${gid || ''}')">حفظ الفوج</button>`);
+        if (!g) setTimeout(() => $('g-name').focus(), 50);
+    }
+    function saveGroup(gid) {
+        const name = $('g-name').value.trim();
+        if (!name) return alert('أدخل اسم الفوج!');
+        const data = { name, time: $('g-time').value.trim(), type: $('g-type').value, price: +$('g-price').value || PRICES[$('g-type').value] };
+        if (gid) Object.assign(findGroup(gid), data);
+        else { const g = { id: uid(), ...data, students: [], sessions: [] }; db.groups.push(g); openGroups.add(g.id); }
+        closeModal(); saveData();
+    }
+    function deleteGroup(gid) {
+        const g = findGroup(gid);
+        if (!confirm(`هل أنت متأكد من حذف "${g.name}" بالكامل مع ${g.students.length} تلميذ وكل الحصص والمدفوعات؟`)) return;
+        db.groups = db.groups.filter(x => x.id !== gid);
+        saveData();
+    }
+
+    /* ================= Students ================= */
+    function openStudentModal(gid, sid) {
+        const g = findGroup(gid);
+        const s = sid ? findStudent(g, sid) : null;
+        const moveOptions = s && db.groups.length > 1 ? `
+            <label class="field">الفوج</label>
+            <select id="s-group">${db.groups.map(x => `<option value="${x.id}" ${x.id === gid ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>` : '';
+        showModal(s ? 'تعديل التلميذ' : 'إضافة تلميذ', `
+            <label class="field">الاسم واللقب</label>
+            <input type="text" id="s-name" placeholder="اسم التلميذ" value="${s ? esc(s.name) : ''}"
+                   onkeydown="if(event.key==='Enter') saveStudent('${gid}','${sid || ''}')">
+            ${moveOptions}
+            <button class="btn-neon" onclick="saveStudent('${gid}','${sid || ''}')">${s ? 'حفظ' : 'إضافة'}</button>
+            ${s ? '' : '<p class="muted" style="margin-top:10px">تقدر تزيد عدة تلاميذ وحدة بوحدة بلا ما تسكّر النافذة.</p>'}`);
+        setTimeout(() => $('s-name').focus(), 50);
+    }
+    function saveStudent(gid, sid) {
+        const name = $('s-name').value.trim();
+        if (!name) return alert('أدخل اسم التلميذ!');
+        const g = findGroup(gid);
+        if (sid) {
+            const s = findStudent(g, sid);
+            s.name = name;
+            const target = $('s-group') ? $('s-group').value : gid;
+            if (target !== gid && confirm('نقل التلميذ لفوج آخر: سجل حضوره في هذا الفوج لن يظهر في الفوج الجديد، لكن المدفوعات تنتقل معه. متابعة؟')) {
+                // garder le solde : les séances déjà suivies sont comptées comme un ajustement
+                const att = attendedCount(g, s);
+                if (att) s.payments.push({ id: uid(), date: today(), sessions: -att, amount: 0, note: 'نقل من ' + g.name });
+                g.students = g.students.filter(x => x.id !== sid);
+                g.sessions.forEach(x => x.present = x.present.filter(id => id !== sid));
+                s.since = today();
+                findGroup(target).students.push(s);
+                openGroups.add(target);
+            }
+            closeModal(); saveData();
+        } else {
+            g.students.push({ id: uid(), name, since: today(), payments: [] });
+            saveData();
+            $('s-name').value = '';
+            $('s-name').focus();
+            toast('✔ تمت إضافة ' + name);
+        }
+    }
+    function deleteStudent(gid, sid) {
+        const g = findGroup(gid), s = findStudent(g, sid);
+        if (!confirm(`هل أنت متأكد من حذف "${s.name}"؟`)) return;
+        g.students = g.students.filter(x => x.id !== sid);
+        g.sessions.forEach(x => x.present = x.present.filter(id => id !== sid));
+        saveData();
+    }
+
+    /* ================= Payments ================= */
+    function openPayModal(gid, sid) {
+        const g = findGroup(gid), s = findStudent(g, sid);
+        const debt = attendedCount(g, s) - paidSessions(s);
+        showModal('تسجيل دفع: ' + s.name, `
+            ${debt > 0 ? `<p class="muted" style="margin-bottom:12px">عليه ${debt} حصص ≈ ${money(debt * g.price / 4)}</p>` : ''}
+            <div class="row">
+                <div><label class="field">عدد الحصص</label>
+                    <input type="number" id="p-sessions" inputmode="numeric" value="4" oninput="$('p-amount').value = Math.round((+this.value||0) * ${g.price} / 4)"></div>
+                <div><label class="field">المبلغ (دج)</label>
+                    <input type="number" id="p-amount" inputmode="numeric" value="${g.price}"></div>
+            </div>
+            <label class="field">التاريخ</label>
+            <input type="date" id="p-date" value="${today()}">
+            <button class="btn-neon" style="background:var(--success);box-shadow:none" onclick="savePayment('${gid}','${sid}')">✔ تأكيد الدفع</button>`);
+    }
+    function savePayment(gid, sid) {
+        const sessions = +$('p-sessions').value;
+        if (!sessions || sessions < 1) return alert('أدخل عدد الحصص!');
+        const s = findStudent(findGroup(gid), sid);
+        const p = { id: uid(), date: $('p-date').value || today(), sessions, amount: +$('p-amount').value || 0 };
+        s.payments.push(p);
+        openGroups.add(gid);
+        closeModal(); saveData();
+        toast(`✔ دفع ${money(p.amount)}`, () => { s.payments = s.payments.filter(x => x.id !== p.id); saveData(); toast('تم إلغاء الدفع'); });
+    }
+    function deletePayment(gid, sid, pid) {
+        if (!confirm('حذف هذا الدفع؟')) return;
+        const s = findStudent(findGroup(gid), sid);
+        s.payments = s.payments.filter(p => p.id !== pid);
+        saveData();
+        showHistory(gid, sid);
+    }
+    function monthRevenue(ym) {
+        let total = 0;
+        db.groups.forEach(g => g.students.forEach(s => s.payments.forEach(p => { if (p.amount && (p.date || '').startsWith(ym)) total += p.amount; })));
+        return total;
+    }
+    function showRevenue() {
+        const months = {};
+        db.groups.forEach(g => g.students.forEach(s => s.payments.forEach(p => {
+            if (!p.amount || !p.date) return;
+            const ym = p.date.slice(0, 7);
+            months[ym] = months[ym] || { total: 0, count: 0 };
+            months[ym].total += p.amount; months[ym].count++;
+        })));
+        const keys = Object.keys(months).sort().reverse();
+        let totalDebt = 0;
+        db.groups.forEach(g => g.students.forEach(s => { const d = attendedCount(g, s) - paidSessions(s); if (d > 0) totalDebt += d * g.price / 4; }));
+        showModal('💰 المداخيل', `
+            <div class="summary" style="grid-template-columns:1fr 1fr">
+                <div><b>${money(monthRevenue(today().slice(0, 7)))}</b>هذا الشهر</div>
+                <div><b style="color:var(--neon-pink)">${money(totalDebt)}</b>ديون غير مدفوعة</div>
+            </div>
+            ${keys.length ? `<table><tr><th>الشهر</th><th>عدد الدفعات</th><th>المبلغ</th></tr>
+                ${keys.map(k => `<tr><td>${monthLabel(k)}</td><td>${months[k].count}</td><td>${money(months[k].total)}</td></tr>`).join('')}</table>`
+                : '<p class="empty">لا توجد مدفوعات مسجلة بعد</p>'}`);
+    }
+
+    /* ================= Sessions ================= */
+    function openAttendanceModal(gid, sessionId) {
+        const g = findGroup(gid);
+        if (!g.students.length) return alert('الفوج فارغ!');
+        const ses = sessionId ? g.sessions.find(x => x.id === sessionId) : null;
+        const list = g.students.map(s => `
+            <label class="att-item"><span>${esc(s.name)}</span>
+                <input type="checkbox" class="att-chk" value="${s.id}" ${ses && ses.present.includes(s.id) ? 'checked' : ''}></label>`).join('');
+        showModal(ses ? 'تعديل الحصة' : 'تسجيل حصة', `
+            <label class="field">التاريخ</label>
+            <input type="date" id="a-date" value="${ses ? ses.date : today()}">
+            <label class="field">موضوع الدرس</label>
+            <input type="text" id="a-topic" placeholder="مثال: تسوية التثبيتات" value="${ses ? esc(ses.topic) : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="muted">الحاضرون: <b id="att-count">0</b> / ${g.students.length}</span>
+                <button class="btn-ghost" onclick="toggleAll()">تحديد الكل</button>
+            </div>
+            <div id="attendance-list" style="margin: 10px 0;" onchange="updateAttCount()">${list}</div>
+            <button class="btn-neon" onclick="saveAttendance('${gid}','${sessionId || ''}')">حفظ الحضور</button>
+            ${ses ? `<button class="btn-danger" style="width:100%;margin-top:10px" onclick="deleteSession('${gid}','${sessionId}')">🗑️ حذف هذه الحصة</button>` : ''}`);
+        updateAttCount();
+    }
+    function updateAttCount() { $('att-count').innerText = document.querySelectorAll('.att-chk:checked').length; }
+    function toggleAll() {
+        const boxes = [...document.querySelectorAll('.att-chk')];
+        const all = boxes.every(b => b.checked);
+        boxes.forEach(b => b.checked = !all);
+        updateAttCount();
+    }
+    function saveAttendance(gid, sessionId) {
+        const g = findGroup(gid);
+        const date = $('a-date').value;
+        if (!date) return alert('اختر التاريخ!');
+        const dup = g.sessions.find(x => x.date === date && x.id !== sessionId);
+        if (dup && !confirm('توجد حصة مسجلة بنفس التاريخ في هذا الفوج. هل تريد تسجيل حصة ثانية؟')) return;
+        const data = { date, topic: $('a-topic').value.trim() || 'درس دعم', present: [...document.querySelectorAll('.att-chk:checked')].map(b => b.value) };
+        if (sessionId) Object.assign(g.sessions.find(x => x.id === sessionId), data);
+        else g.sessions.push({ id: uid(), ...data });
+        openGroups.add(gid);
+        closeModal(); saveData();
+        toast(sessionId ? '✔ تم تعديل الحصة' : `✔ تم تسجيل الحصة (${data.present.length} حاضر)`);
+    }
+    function deleteSession(gid, sessionId) {
+        if (!confirm('حذف هذه الحصة نهائياً؟')) return;
+        const g = findGroup(gid);
+        g.sessions = g.sessions.filter(x => x.id !== sessionId);
+        saveData();
+        showSessions(gid);
+    }
+    function showSessions(gid) {
+        const g = findGroup(gid);
+        const list = sessionsSorted(g).map(x => `
+            <div class="list-item" onclick="openAttendanceModal('${gid}','${x.id}')">
+                <div><b>${x.date || '—'}</b><div class="muted">${esc(x.topic)}</div></div>
+                <span class="muted">${x.present.length} حاضر ✏️</span>
+            </div>`).join('');
+        showModal('📅 حصص ' + g.name, list || '<p class="empty">لا توجد حصص مسجلة</p>');
+    }
+
+    /* ================= History ================= */
+    function showHistory(gid, sid) {
+        const g = findGroup(gid), s = findStudent(g, sid);
+        const attended = attendedCount(g, s), paid = paidSessions(s);
+        const totalAmount = s.payments.reduce((a, p) => a + (p.amount > 0 ? p.amount : 0), 0);
+        const sessions = sessionsSorted(g).filter(x => !s.since || !x.date || x.date >= s.since || x.present.includes(s.id));
+        const rows = sessions.map(x => {
+            const p = x.present.includes(s.id);
+            return `<tr><td>${x.date}</td><td>${esc(x.topic)}</td><td style="color:${p ? 'var(--success)' : 'var(--danger)'}">${p ? 'حاضر ✅' : 'غائب ❌'}</td></tr>`;
+        }).join('');
+        const pays = [...s.payments].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(p => `
+            <tr><td>${p.date || 'قديم'}</td><td>${p.sessions} حصص${p.note ? `<div class="muted">${esc(p.note)}</div>` : ''}</td>
+            <td>${p.amount == null ? '—' : money(p.amount)}</td>
+            <td><button class="btn-danger" style="padding:4px 8px" onclick="deletePayment('${gid}','${sid}','${p.id}')">🗑️</button></td></tr>`).join('');
+        showModal('سجل: ' + s.name, `
+            <div class="summary">
+                <div><b>${attended}</b>حصص حضرها</div>
+                <div><b>${paid}</b>حصص مدفوعة</div>
+                <div><b>${money(totalAmount)}</b>مجموع الدفع</div>
+            </div>
+            <h4>المدفوعات</h4>
+            ${pays ? `<table><tr><th>التاريخ</th><th>الحصص</th><th>المبلغ</th><th></th></tr>${pays}</table>` : '<p class="empty">لا توجد مدفوعات</p>'}
+            <h4>الحضور</h4>
+            ${rows ? `<table><tr><th>التاريخ</th><th>الموضوع</th><th>الحالة</th></tr>${rows}</table>` : '<p class="empty">لا توجد حصص مسجلة</p>'}`);
+    }
+
+    /* ================= Print ================= */
+    function printGroup(gid) {
+        const g = findGroup(gid);
+        $('print-title').innerText = g.name + (g.time ? ' - ' + g.time : '');
+        $('print-tbody').innerHTML = g.students.map((s, i) => `<tr><td>${i + 1}</td><td>${esc(s.name)}</td><td></td></tr>`).join('');
+        window.print();
+    }
+
+    /* ================= Backup & Restore ================= */
+    function backupName(ext) { return 'Gestion_Backup_' + today() + '.' + ext; }
+    function markBackup() { localStorage.setItem(BACKUP_KEY, Date.now()); render(); }
+    function openBackupModal() {
+        const canShare = !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.txt', { type: 'text/plain' })] }));
+        showModal('💾 نسخة احتياطية', `
+            <p class="muted" style="margin-bottom:12px">احتفظ بالنسخة في مكان آمن خارج الهاتف (واتساب، درايف، إيميل) باش ما تضيعش بياناتك.</p>
+            ${canShare ? '<button class="btn-neon" onclick="shareBackup()">📤 إرسال (واتساب / درايف / إيميل)</button>' : ''}
+            <button class="btn-neon" style="background:#333;box-shadow:none" onclick="downloadBackup()">⬇️ تحميل في الهاتف</button>`);
+    }
+    async function shareBackup() {
+        const file = new File([JSON.stringify(db)], backupName('txt'), { type: 'text/plain' });
+        try {
+            await navigator.share({ files: [file], title: 'نسخة احتياطية - أستاذ الشارع' });
+            closeModal(); markBackup(); toast('✔ تم إرسال النسخة');
+        } catch (e) {
+            if (e.name !== 'AbortError') downloadBackup();
+        }
+    }
+    function downloadBackup() {
+        const blob = new Blob([JSON.stringify(db)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = backupName('json');
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        closeModal(); markBackup(); toast('✔ تم التحميل في مجلد التنزيلات');
+    }
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            event.target.value = '';
+            let data;
+            try { data = migrate(JSON.parse(e.target.result)); }
+            catch (err) { return alert('عذراً، هذا الملف ليس نسخة احتياطية صالحة! لم يتم تغيير أي شيء.'); }
+            const nNew = data.groups.reduce((a, g) => a + g.students.length, 0);
+            const nOld = db.groups.reduce((a, g) => a + g.students.length, 0);
+            if (!confirm(`النسخة المسترجعة فيها ${data.groups.length} فوج و ${nNew} تلميذ.\nسيتم استبدال البيانات الحالية (${nOld} تلميذ). متابعة؟`)) return;
+            localStorage.setItem(STORE_KEY + '_prev', JSON.stringify(db));
+            db = data;
+            saveData();
+            alert('تم استرجاع البيانات بنجاح!');
+        };
+        reader.readAsText(file);
+    }
+    function renderBackupBanner(totalStudents) {
+        const last = +localStorage.getItem(BACKUP_KEY) || 0;
+        const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+        const show = totalStudents > 0 && (days === null || days >= 7);
+        $('backup-banner').innerHTML = show ? `
+            <div class="banner"><span>⚠️ ${days === null ? 'لم تقم بأي نسخة احتياطية بعد' : 'آخر نسخة احتياطية منذ ' + days + ' يوم'}</span>
+            <button onclick="openBackupModal()">حفظ الآن</button></div>` : '';
+    }
+
+    /* ================= App install & offline ================= */
+    let installEvent = null;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; $('installBtn').style.display = 'block'; });
+    window.addEventListener('appinstalled', () => { $('installBtn').style.display = 'none'; });
+    async function installApp() {
+        if (!installEvent) return;
+        installEvent.prompt();
+        await installEvent.userChoice;
+        installEvent = null; $('installBtn').style.display = 'none';
+    }
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+    // Demande au téléphone de ne jamais effacer les données de l'app
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+    render();
+    </script>
+</body>
+</html>
