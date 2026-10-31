@@ -1,5 +1,5 @@
 // Service worker : fait fonctionner l'app sans internet
-const CACHE = 'gestion-v2';
+const CACHE = 'gestion-v3';
 const APP_FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-maskable.png'];
 
 self.addEventListener('install', e => {
